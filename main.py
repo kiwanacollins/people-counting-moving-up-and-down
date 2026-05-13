@@ -1,4 +1,5 @@
 import argparse
+import time
 from collections import OrderedDict
 from pathlib import Path
 
@@ -101,6 +102,12 @@ def parse_args():
         default=0.5,
         help="Horizontal counting line position as a fraction of frame height.",
     )
+    parser.add_argument(
+        "--line-buffer",
+        type=int,
+        default=20,
+        help="Pixel buffer on each side of the counting line to suppress jitter-based double-counts.",
+    )
     return parser.parse_args()
 
 
@@ -123,15 +130,23 @@ def main():
     if not cap.isOpened():
         raise RuntimeError(f"Unable to open video: {video_path}")
 
+    fps = cap.get(cv2.CAP_PROP_FPS) or 25.0
+    frame_duration = 1.0 / fps
+    # Keep objects alive for ~2 real-time seconds regardless of FPS
+    max_disappeared = max(1, int(fps * 2))
+
     up_count = 0
     down_count = 0
-    ct = CentroidTracker()
+    ct = CentroidTracker(max_disappeared=max_disappeared)
     previous_y = {}
 
     frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     line_position = int(frame_height * args.line_ratio)
+    line_buffer = args.line_buffer
 
     while cap.isOpened():
+        t_frame_start = time.monotonic()
+
         ret, frame = cap.read()
         if not ret:
             break
@@ -169,10 +184,12 @@ def main():
             if object_id in previous_y:
                 prev_y = previous_y[object_id]
 
-                if prev_y > line_position and current_y < line_position:
+                # Require the centroid to clear the buffer zone on both sides to
+                # avoid jitter-based double-counts at higher frame rates.
+                if prev_y > line_position + line_buffer and current_y < line_position - line_buffer:
                     up_count += 1
                     print(f"Person {object_id} moved up.")
-                elif prev_y < line_position and current_y > line_position:
+                elif prev_y < line_position - line_buffer and current_y > line_position + line_buffer:
                     down_count += 1
                     print(f"Person {object_id} moved down.")
 
@@ -183,7 +200,12 @@ def main():
         cv2.putText(frame, f"Down: {down_count}", (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
         cv2.imshow("People Counting", frame)
 
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        # Pace playback to the video's native FPS; inference already consumes
+        # most of the frame budget, so wait_ms is often just 1 ms, but this
+        # prevents artificial slow-motion on high-FPS sources like 60 fps footage.
+        elapsed = time.monotonic() - t_frame_start
+        wait_ms = max(1, int((frame_duration - elapsed) * 1000))
+        if cv2.waitKey(wait_ms) & 0xFF == ord('q'):
             break
 
     cap.release()
