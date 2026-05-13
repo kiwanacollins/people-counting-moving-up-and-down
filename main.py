@@ -1,6 +1,9 @@
+import argparse
+from collections import OrderedDict
+from pathlib import Path
+
 import cv2
 import numpy as np
-from collections import OrderedDict
 
 # CentroidTracker class to keep track of objects and their IDs across frames
 class CentroidTracker:
@@ -71,112 +74,122 @@ class CentroidTracker:
         return self.objects
 
 
-# Load the pre-trained MobileNet-SSD model
-net = cv2.dnn.readNetFromCaffe('deploy.prototxt', 'mobilenet_iter_73000.caffemodel')
-
-# Labels for the classes in the COCO dataset, index 15 is 'person'
 CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
            "bottle", "bus", "car", "cat", "chair", "cow", "diningtable",
            "dog", "horse", "motorbike", "person", "pottedplant", "sheep",
            "sofa", "train", "tvmonitor"]
 
-# Load the video stream
-cap = cv2.VideoCapture('test.mp4')
+BASE_DIR = Path(__file__).resolve().parent
 
-# Counters for people moving up and down
-up_count = 0
-down_count = 0
 
-# Create an instance of CentroidTracker
-ct = CentroidTracker()
+def resolve_path(path_str):
+    path = Path(path_str)
+    if path.is_absolute():
+        return path
+    return BASE_DIR / path
 
-# Dictionary to store the previous y-coordinate for each object
-previous_y = {}
 
-# Set horizontal line position (center of the screen)
-line_position = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT) // 2)
+def parse_args():
+    parser = argparse.ArgumentParser(description="Count people moving up and down in a video.")
+    parser.add_argument("--video", default="test.mp4", help="Path to the input video file.")
+    parser.add_argument("--prototxt", default="deploy.prototxt", help="Path to the Caffe deploy prototxt file.")
+    parser.add_argument("--model", default="mobilenet_iter_73000.caffemodel", help="Path to the MobileNet-SSD model file.")
+    parser.add_argument("--confidence", type=float, default=0.5, help="Minimum detection confidence.")
+    parser.add_argument(
+        "--line-ratio",
+        type=float,
+        default=0.5,
+        help="Horizontal counting line position as a fraction of frame height.",
+    )
+    return parser.parse_args()
 
-# Loop through the video frames
-while cap.isOpened():
-    ret, frame = cap.read()
-    if not ret:
-        break
 
-    # Get frame dimensions
-    (h, w) = frame.shape[:2]
+def main():
+    args = parse_args()
 
-    # Prepare the input blob for object detection
-    blob = cv2.dnn.blobFromImage(cv2.resize(frame, (300, 300)), 0.007843, (300, 300), 127.5)
-    net.setInput(blob)
+    prototxt_path = resolve_path(args.prototxt)
+    model_path = resolve_path(args.model)
+    video_path = resolve_path(args.video)
 
-    # Perform forward pass to get detections
-    detections = net.forward()
+    for file_path in (prototxt_path, model_path, video_path):
+        if not file_path.exists():
+            raise FileNotFoundError(f"Required file not found: {file_path}")
 
-    # Initialize a list to hold detected centroids
-    centroids = []
+    if not 0 < args.line_ratio < 1:
+        raise ValueError("--line-ratio must be between 0 and 1.")
 
-    # Loop over the detections
-    for i in range(detections.shape[2]):
-        confidence = detections[0, 0, i, 2]
+    net = cv2.dnn.readNetFromCaffe(str(prototxt_path), str(model_path))
+    cap = cv2.VideoCapture(str(video_path))
+    if not cap.isOpened():
+        raise RuntimeError(f"Unable to open video: {video_path}")
 
-        # Only process confident detections (greater than 50%)
-        if confidence > 0.5:
-            # Get the class label
+    up_count = 0
+    down_count = 0
+    ct = CentroidTracker()
+    previous_y = {}
+
+    frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    line_position = int(frame_height * args.line_ratio)
+
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        (h, w) = frame.shape[:2]
+        blob = cv2.dnn.blobFromImage(cv2.resize(frame, (300, 300)), 0.007843, (300, 300), 127.5)
+        net.setInput(blob)
+        detections = net.forward()
+        centroids = []
+
+        for i in range(detections.shape[2]):
+            confidence = detections[0, 0, i, 2]
+            if confidence <= args.confidence:
+                continue
+
             idx = int(detections[0, 0, i, 1])
             if CLASSES[idx] != "person":
                 continue
 
-            # Compute the bounding box for the object
             box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
             (x1, y1, x2, y2) = box.astype("int")
 
-            # Calculate the centroid
             centroid = (int((x1 + x2) / 2), int((y1 + y2) / 2))
             centroids.append(centroid)
 
-            # Draw the bounding box and label
             label = f"Person {confidence:.2f}"
             cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
             cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-    # Update the centroid tracker with the new centroids
-    objects = ct.update(centroids)
+        objects = ct.update(centroids)
 
-    # Loop over the tracked objects
-    for (object_id, centroid) in objects.items():
-        current_y = centroid[1]
+        for (object_id, centroid) in objects.items():
+            current_y = centroid[1]
 
-        # Check if this object has been seen before
-        if object_id in previous_y:
-            prev_y = previous_y[object_id]
+            if object_id in previous_y:
+                prev_y = previous_y[object_id]
 
-            # Check if the person is moving up (from below the line to above it)
-            if prev_y > line_position and current_y < line_position:
-                up_count += 1
-                print(f"Person {object_id} moved up.")
+                if prev_y > line_position and current_y < line_position:
+                    up_count += 1
+                    print(f"Person {object_id} moved up.")
+                elif prev_y < line_position and current_y > line_position:
+                    down_count += 1
+                    print(f"Person {object_id} moved down.")
 
-            # Check if the person is moving down (from above the line to below it)
-            elif prev_y < line_position and current_y > line_position:
-                down_count += 1
-                print(f"Person {object_id} moved down.")
+            previous_y[object_id] = current_y
 
-        # Store the current y-coordinate as the previous y-coordinate for the next frame
-        previous_y[object_id] = current_y
+        cv2.line(frame, (0, line_position), (w, line_position), (0, 0, 255), 2)
+        cv2.putText(frame, f"Up: {up_count}", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+        cv2.putText(frame, f"Down: {down_count}", (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+        cv2.imshow("People Counting", frame)
 
-    # Draw the horizontal line across the frame
-    cv2.line(frame, (0, line_position), (w, line_position), (0, 0, 255), 2)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
-    # Display the up and down counts on the frame
-    cv2.putText(frame, f"Up: {up_count}", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-    cv2.putText(frame, f"Down: {down_count}", (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+    cap.release()
+    cv2.destroyAllWindows()
+    print(f"Final count -> Up: {up_count}, Down: {down_count}")
 
-    # Show the frame with detections and counters
-    cv2.imshow("People Counting", frame)
 
-    # Break the loop with 'q' key
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-
-# Release video capture and close windows
-cap.release()
-cv2.destroyAllWindows()
+if __name__ == "__main__":
+    main()
