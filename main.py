@@ -138,7 +138,9 @@ def main():
     up_count = 0
     down_count = 0
     ct = CentroidTracker(max_disappeared=max_disappeared)
-    previous_y = {}
+    # Stores the last confirmed side for each object: 'above' or 'below'.
+    # A side is confirmed only when the centroid is outside the buffer zone.
+    confirmed_side = {}
 
     frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     line_position = int(frame_height * args.line_ratio)
@@ -181,19 +183,25 @@ def main():
         for (object_id, centroid) in objects.items():
             current_y = centroid[1]
 
-            if object_id in previous_y:
-                prev_y = previous_y[object_id]
+            # Determine which confirmed side of the line the centroid is on.
+            # Centroids inside the buffer zone are ignored to suppress jitter.
+            if current_y < line_position - line_buffer:
+                new_side = "above"
+            elif current_y > line_position + line_buffer:
+                new_side = "below"
+            else:
+                new_side = None  # inside buffer zone — no update
 
-                # Require the centroid to clear the buffer zone on both sides to
-                # avoid jitter-based double-counts at higher frame rates.
-                if prev_y > line_position + line_buffer and current_y < line_position - line_buffer:
-                    up_count += 1
-                    print(f"Person {object_id} moved up.")
-                elif prev_y < line_position - line_buffer and current_y > line_position + line_buffer:
-                    down_count += 1
-                    print(f"Person {object_id} moved down.")
-
-            previous_y[object_id] = current_y
+            if new_side is not None:
+                prev_side = confirmed_side.get(object_id)
+                if prev_side is not None and prev_side != new_side:
+                    if new_side == "above":
+                        up_count += 1
+                        print(f"Person {object_id} moved up.")
+                    else:
+                        down_count += 1
+                        print(f"Person {object_id} moved down.")
+                confirmed_side[object_id] = new_side
 
         cv2.line(frame, (0, line_position), (w, line_position), (0, 0, 255), 2)
         cv2.putText(frame, f"Up: {up_count}", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
