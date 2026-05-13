@@ -93,3 +93,7 @@ Use this command after installing dependencies:
 ```bash
 python3 main.py
 ```
+
+
+python3 main.py                                             # test.mp4
+python3 main.py --video old-building-footage-converted.mp4
