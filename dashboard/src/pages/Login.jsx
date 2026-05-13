@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Shield, Eye, EyeOff } from 'lucide-react'
 import { USERS } from '../data/mockData'
-import kiuImage from '../assets/kiu-image.jpg'
+import heroImage from '../assets/ai-people-tracking-hero.avif'
 
 export default function Login({ onLogin }) {
   const [username, setUsername] = useState('')
@@ -28,43 +28,60 @@ export default function Login({ onLogin }) {
   const fillDemo = (u, p) => { setUsername(u); setPassword(p); setError('') }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex items-center justify-center p-4">
-      {/* Background pattern */}
-      <div className="absolute inset-0 opacity-5"
-        style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }}
-      />
-
-      <div className="relative w-full max-w-md">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600 shadow-xl shadow-blue-900/50 mb-4">
-            <Shield className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-2xl font-black text-white tracking-tight">
-            Kampala International University
-          </h1>
-          <p className="text-blue-300 mt-1.5 font-medium">People Detection &amp; Counting System</p>
-          <p className="text-slate-500 text-xs mt-1">School of Mathematics &amp; Computing (SOMAC) · 2025/2026</p>
+    <div className="min-h-screen bg-gradient-to-br from-white to-gray-50 flex">
+      {/* Left side - Hero image */}
+      <div className="hidden lg:flex lg:w-1/2 relative items-end justify-start p-12">
+        <div 
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `url(${heroImage})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center'
+          }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/30 to-transparent" />
         </div>
+        
+        <div className="relative z-10 max-w-md">
+          <h2 className="text-4xl font-black text-white leading-tight mb-2">
+            Real-Time<br />People Detection
+          </h2>
+          <p className="text-emerald-200 text-lg font-semibold">
+            Capturing Moments, Creating Intelligence
+          </p>
+        </div>
+      </div>
 
-        {/* Card */}
-        <div className="bg-white rounded-2xl shadow-2xl shadow-black/30 overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-4">
-            <h2 className="text-white font-bold text-base">Sign In to Dashboard</h2>
-            <p className="text-blue-200 text-xs mt-0.5">Authorized personnel only</p>
+      {/* Right side - Login form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6">
+        <div className="w-full max-w-sm">
+          {/* Header */}
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 rounded-xl bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-600/30">
+                <Shield className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-black text-black">KIU Campus</h1>
+                <p className="text-xs text-emerald-600 font-semibold">People Detection System</p>
+              </div>
+            </div>
           </div>
 
-          <div className="px-8 py-6">
+          {/* Form */}
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-6">
+            <h2 className="text-xl font-bold text-slate-900 mb-1">Welcome Back</h2>
+            <p className="text-sm text-slate-600 mb-5">Sign in to your account to continue</p>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5">
                   Username
                 </label>
                 <input
                   type="text"
                   value={username}
                   onChange={e => setUsername(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-slate-50 transition-all"
+                  className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm text-slate-900 placeholder-slate-400 transition-all"
                   placeholder="Enter your username"
                   autoComplete="username"
                   required
@@ -72,7 +89,7 @@ export default function Login({ onLogin }) {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5">
                   Password
                 </label>
                 <div className="relative">
@@ -80,7 +97,7 @@ export default function Login({ onLogin }) {
                     type={showPass ? 'text' : 'password'}
                     value={password}
                     onChange={e => setPassword(e.target.value)}
-                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-slate-50 pr-11 transition-all"
+                    className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm text-slate-900 placeholder-slate-400 pr-11 transition-all"
                     placeholder="Enter your password"
                     autoComplete="current-password"
                     required
@@ -88,7 +105,7 @@ export default function Login({ onLogin }) {
                   <button
                     type="button"
                     onClick={() => setShowPass(!showPass)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-colors"
                   >
                     {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -96,7 +113,7 @@ export default function Login({ onLogin }) {
               </div>
 
               {error && (
-                <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 border border-red-200 px-3 py-2.5 rounded-xl">
+                <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 border border-red-300 px-3 py-2.5 rounded-xl">
                   <span className="text-red-500">⚠</span>
                   {error}
                 </div>
@@ -105,21 +122,21 @@ export default function Login({ onLogin }) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-xl font-semibold text-sm transition-colors shadow-lg shadow-blue-600/30 mt-2"
+                className="w-full py-2.5 px-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:from-emerald-400 disabled:to-teal-400 text-white rounded-xl font-semibold text-sm transition-all shadow-lg shadow-emerald-600/30 mt-1"
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
-                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Authenticating…
+                    <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Signing in…
                   </span>
                 ) : 'Sign In'}
               </button>
             </form>
 
             {/* Demo credentials */}
-            <div className="mt-5 p-4 bg-slate-50 rounded-xl border border-slate-200">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2.5">
-                Demo Accounts — click to fill
+            <div className="mt-5 pt-5 border-t border-gray-200">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">
+                Demo Accounts — tap to fill
               </p>
               <div className="space-y-1.5">
                 {USERS.map(u => (
@@ -127,22 +144,23 @@ export default function Login({ onLogin }) {
                     key={u.username}
                     type="button"
                     onClick={() => fillDemo(u.username, u.password)}
-                    className="w-full flex items-center justify-between px-3 py-1.5 rounded-lg hover:bg-white border border-transparent hover:border-slate-200 transition-all text-xs"
+                    className="w-full flex items-center justify-between px-3 py-1.5 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-300 transition-all text-[11px]"
                   >
-                    <span className="font-mono font-semibold text-slate-700">{u.username}</span>
-                    <span className="font-mono text-slate-400">{u.password}</span>
-                    <span className="text-blue-500 text-[10px] font-semibold uppercase tracking-wide">{u.role}</span>
+                    <span className="font-mono font-bold text-slate-700">{u.username}</span>
+                    <span className="font-mono text-slate-500 text-[9px]">{u.password}</span>
+                    <span className="text-emerald-400 text-[9px] font-bold uppercase tracking-wide">{u.role}</span>
                   </button>
                 ))}
               </div>
             </div>
           </div>
-        </div>
 
-        <p className="text-center text-slate-600 text-xs mt-6">
-          © 2026 Kampala International University · Final Year Project<br />
-          <span className="text-slate-700">KIWANA COLLINS · MUMARASHAVU YVETTE · NDAGIRE PATRICIA · GIFT PROSCOVIA</span>
-        </p>
+          {/* Footer */}
+          <p className="text-center text-slate-600 text-[10px] mt-6 leading-relaxed">
+            © 2026 Kampala International University<br />
+            <span className="text-slate-500">Final Year Project • SOMAC 2025/2026</span>
+          </p>
+        </div>
       </div>
     </div>
   )
