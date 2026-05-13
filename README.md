@@ -94,6 +94,12 @@ Use this command after installing dependencies:
 python3 main.py
 ```
 
+admin	admin123	Administrator
+security	sec123	Security Staff
+viewer	view123	Viewer
+
+
+
 
 python3 main.py                                             # test.mp4
 python3 main.py --video old-building-footage-converted.mp4

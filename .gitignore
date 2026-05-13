@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+dashboard/node_modules/
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment
+.venv/
+venv/
+.env
+.env.local
+
+# IDE & OS
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Vite
+.vite/
