@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Shield, Eye, EyeOff } from 'lucide-react'
 import { USERS } from '../data/mockData'
+import kiuImage from '../assets/kiu-image.jpg'
 
 export default function Login({ onLogin }) {
   const [username, setUsername] = useState('')

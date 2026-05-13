@@ -18,22 +18,22 @@ export default function TopBar({ user }) {
   const title = PAGE_TITLES[location.pathname] || 'KIU Detection System'
 
   return (
-    <header className="h-14 bg-white border-b border-slate-200 flex items-center px-6 gap-4 flex-shrink-0">
+    <header className="h-14 bg-white border-b border-emerald-100 flex items-center px-6 gap-4 flex-shrink-0">
       <div className="flex-1 min-w-0">
-        <h2 className="text-sm font-bold text-slate-800 leading-tight">{title}</h2>
-        <div className="flex items-center gap-1.5 text-xs text-slate-400 mt-0.5">
+        <h2 className="text-sm font-bold text-emerald-900 leading-tight">{title}</h2>
+        <div className="flex items-center gap-1.5 text-xs text-emerald-600 mt-0.5">
           <Activity className="w-3 h-3 text-emerald-500 flex-shrink-0" />
           <span>Live monitoring</span>
-          <span className="text-slate-300">·</span>
+          <span className="text-emerald-300">·</span>
           <span>{dateStr}</span>
-          <span className="text-slate-300">·</span>
-          <span className="tabular-nums font-medium text-slate-500">{timeStr}</span>
+          <span className="text-emerald-300">·</span>
+          <span className="tabular-nums font-medium text-emerald-700">{timeStr}</span>
         </div>
       </div>
 
       {/* Notification bell */}
       <div className="relative cursor-pointer">
-        <Bell className="w-5 h-5 text-slate-500 hover:text-slate-700 transition-colors" />
+        <Bell className="w-5 h-5 text-emerald-600 hover:text-emerald-800 transition-colors" />
         {alertCount > 0 && (
           <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center font-bold">
             {alertCount}
@@ -42,13 +42,13 @@ export default function TopBar({ user }) {
       </div>
 
       {/* User */}
-      <div className="flex items-center gap-2.5 pl-3 border-l border-slate-200">
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white text-sm font-bold">
+      <div className="flex items-center gap-2.5 pl-3 border-l border-emerald-100">
+        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center text-white text-sm font-bold">
           {user.name.charAt(0)}
         </div>
         <div className="hidden sm:block">
-          <p className="text-xs font-semibold text-slate-700 leading-tight">{user.name.split(' ')[0]}</p>
-          <p className="text-[10px] text-slate-400 uppercase tracking-wide">{user.role}</p>
+          <p className="text-xs font-semibold text-emerald-900 leading-tight">{user.name.split(' ')[0]}</p>
+          <p className="text-[10px] text-emerald-600 uppercase tracking-wide">{user.role}</p>
         </div>
       </div>
     </header>

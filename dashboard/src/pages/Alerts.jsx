@@ -20,10 +20,10 @@ const SEVERITY = {
   },
   info: {
     Icon: Info,
-    ring:    'border-blue-200 bg-blue-50',
-    icon:    'text-blue-400',
-    badge:   'bg-blue-100 text-blue-700',
-    typeBg:  'bg-blue-500',
+    ring:    'border-emerald-200 bg-emerald-50',
+    icon:    'text-emerald-500',
+    badge:   'bg-emerald-100 text-emerald-700',
+    typeBg:  'bg-teal-600',
   },
 }
 
@@ -57,35 +57,35 @@ export default function Alerts() {
     )
 
   return (
-    <div className="space-y-5 max-w-4xl">
+    <div className="space-y-6 max-w-4xl">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-slate-800 flex items-center gap-3">
+          <h1 className="text-3xl font-black text-emerald-900 flex items-center gap-3">
             Alerts &amp; Notifications
             {alertCount > 0 && (
-              <span className="px-2.5 py-0.5 bg-red-100 text-red-600 text-sm font-bold rounded-full">
+              <span className="px-3 py-1 bg-red-100 text-red-600 text-sm font-bold rounded-full">
                 {alertCount} live
               </span>
             )}
           </h1>
-          <p className="text-sm text-slate-500 mt-0.5">System alerts from all monitoring zones</p>
+          <p className="text-sm text-emerald-600 mt-1">System alerts from all monitoring zones</p>
         </div>
       </div>
 
       {/* Filter tabs */}
-      <div className="flex gap-1 bg-slate-100 p-1 rounded-xl w-fit">
+      <div className="flex gap-1 bg-emerald-50 p-1 rounded-xl w-fit border border-emerald-200">
         {FILTERS.map(([key, label]) => (
           <button
             key={key}
             onClick={() => setFilter(key)}
-            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${
-              filter === key ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+              filter === key ? 'bg-white text-emerald-900 shadow-sm border border-emerald-200' : 'text-emerald-600 hover:text-emerald-700'
             }`}
           >
             {label}
             <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-              filter === key ? 'bg-slate-100 text-slate-600' : 'bg-slate-200 text-slate-500'
+              filter === key ? 'bg-emerald-100 text-emerald-700' : 'bg-emerald-100/60 text-emerald-600'
             }`}>
               {counts[key]}
             </span>
@@ -98,8 +98,8 @@ export default function Alerts() {
         {visible.length === 0 && (
           <div className="text-center py-16">
             <CheckCircle className="w-12 h-12 text-emerald-400 mx-auto mb-3" />
-            <p className="text-slate-500 font-medium">No alerts to display</p>
-            <p className="text-slate-400 text-sm mt-1">All zones are operating normally</p>
+            <p className="text-emerald-700 font-medium">No alerts to display</p>
+            <p className="text-emerald-600 text-sm mt-1">All zones are operating normally</p>
           </div>
         )}
 
@@ -108,17 +108,17 @@ export default function Alerts() {
           const SIcon = s.Icon
           return (
             <div key={alert.id} className={`border rounded-2xl p-4 flex items-start gap-4 ${s.ring}`}>
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 bg-white border border-slate-200 shadow-sm`}>
-                <SIcon className={`w-4.5 h-4.5 w-5 h-5 ${s.icon}`} />
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 bg-white border border-emerald-200 shadow-sm`}>
+                <SIcon className={`w-5 h-5 ${s.icon}`} />
               </div>
 
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap mb-1">
+                <div className="flex items-center gap-2 flex-wrap mb-2">
                   <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full text-white ${s.typeBg}`}>
                     {alert.type}
                   </span>
-                  <span className="text-xs font-bold text-slate-700">{alert.zoneName}</span>
-                  <span className="text-[10px] text-slate-400 font-mono bg-white px-1.5 py-0.5 rounded border border-slate-200">
+                  <span className="text-xs font-bold text-emerald-900">{alert.zoneName}</span>
+                  <span className="text-[10px] text-emerald-600 font-mono bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
                     {alert.camera}
                   </span>
                   {alert.status === 'resolved' && (
@@ -127,8 +127,8 @@ export default function Alerts() {
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-slate-700 leading-relaxed">{alert.description}</p>
-                <p className="text-xs text-slate-400 mt-1.5">
+                <p className="text-sm text-emerald-900 leading-relaxed">{alert.description}</p>
+                <p className="text-xs text-emerald-600 mt-2">
                   <span className="font-medium">Triggered:</span> {fmt(alert.triggeredAt)}
                   {alert.resolvedAt && (
                     <span className="ml-2">
@@ -141,7 +141,7 @@ export default function Alerts() {
               {alert.status === 'active' && (
                 <button
                   onClick={() => resolve(alert.id)}
-                  className="flex-shrink-0 px-3 py-1.5 text-xs font-semibold bg-white hover:bg-slate-50 border border-slate-200 rounded-xl text-slate-600 transition-colors shadow-sm"
+                  className="flex-shrink-0 px-3 py-1.5 text-xs font-semibold bg-white hover:bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-700 transition-colors shadow-sm"
                 >
                   Resolve
                 </button>
@@ -152,7 +152,7 @@ export default function Alerts() {
       </div>
 
       {/* Info footer */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-xs text-blue-700 leading-relaxed">
+      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-xs text-emerald-700 leading-relaxed">
         <strong>Note:</strong> Alerts are generated automatically when zone occupancy exceeds the configured threshold.
         Critical alerts (≥ 90%) are escalated immediately. The system complies with KIU's Data Protection Policy —
         no biometric data is stored.
