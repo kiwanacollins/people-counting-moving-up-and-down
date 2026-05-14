@@ -1,5 +1,6 @@
 import { useSimulation } from '../context/SimulationContext'
 import { MapPin, Camera, TrendingUp, TrendingDown } from 'lucide-react'
+import { getPermissions } from '../data/roles'
 
 const STATUS = {
   normal:  { label: 'Normal',  card: 'border-emerald-200',  badge: 'bg-emerald-100 text-emerald-700', bar: 'bg-emerald-600' },
@@ -90,8 +91,9 @@ function ZoneCard({ zone }) {
   )
 }
 
-export default function Zones() {
+export default function Zones({ user }) {
   const { zones, totalCount, alertCount } = useSimulation()
+  const permissions = getPermissions(user.role)
 
   const netFlow = zones.reduce((s, z) => s + z.inCount - z.outCount, 0)
 
@@ -101,7 +103,13 @@ export default function Zones() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-black text-emerald-900">Live Zone Monitoring</h1>
-          <p className="text-sm text-emerald-600 mt-1">7 zones · 7 cameras · updated every 2 seconds</p>
+          <p className="text-sm text-emerald-600 mt-1">
+            {permissions.canAddZone
+              ? 'Admin control enabled · dynamic zone management active'
+              : user.role === 'Security Staff'
+                ? 'Security operations view · focus on active incidents'
+                : 'Viewer mode · live monitoring only'}
+          </p>
         </div>
         <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-300 px-4 py-2.5 rounded-xl shadow-sm">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -128,6 +136,16 @@ export default function Zones() {
           <p className="text-xs text-emerald-600 font-medium mt-0.5">Zones Above Threshold</p>
         </div>
       </div>
+
+      {(permissions.canResolveAlerts || permissions.canAddZone) && (
+        <div className="bg-white border border-emerald-100 rounded-xl p-4 shadow-sm">
+          <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wide">Operational Net Flow</p>
+          <p className="text-2xl font-black text-emerald-900 tabular-nums mt-1">{netFlow.toLocaleString()}</p>
+          <p className="text-xs text-emerald-600 mt-0.5">
+            Total cumulative in-flow minus out-flow across all zones.
+          </p>
+        </div>
+      )}
 
       {/* Zone grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">

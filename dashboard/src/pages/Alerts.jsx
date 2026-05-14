@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { AlertTriangle, Info, XCircle, CheckCircle } from 'lucide-react'
 import { ALERTS } from '../data/mockData'
 import { useSimulation } from '../context/SimulationContext'
+import { getPermissions } from '../data/roles'
 
 const SEVERITY = {
   critical: {
@@ -36,10 +37,11 @@ function fmt(iso) {
 
 const FILTERS = [['all', 'All'], ['active', 'Active'], ['resolved', 'Resolved']]
 
-export default function Alerts() {
+export default function Alerts({ user }) {
   const [filter, setFilter]   = useState('all')
   const [alerts, setAlerts]   = useState(ALERTS)
   const { alertCount }        = useSimulation()
+  const permissions = getPermissions(user.role)
 
   const counts = {
     all:      alerts.length,
@@ -138,7 +140,7 @@ export default function Alerts() {
                 </p>
               </div>
 
-              {alert.status === 'active' && (
+              {permissions.canResolveAlerts && alert.status === 'active' && (
                 <button
                   onClick={() => resolve(alert.id)}
                   className="flex-shrink-0 px-3 py-1.5 text-xs font-semibold bg-white hover:bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-700 transition-colors shadow-sm"

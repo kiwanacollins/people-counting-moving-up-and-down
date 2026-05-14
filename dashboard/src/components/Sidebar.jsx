@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { LayoutDashboard, Video, BarChart2, Bell, LogOut, Shield } from 'lucide-react'
+import { getPermissions } from '../data/roles'
 
 const NAV = [
   { to: '/overview', icon: LayoutDashboard, label: 'Overview' },
@@ -9,6 +10,9 @@ const NAV = [
 ]
 
 export default function Sidebar({ user, onLogout }) {
+  const permissions = getPermissions(user.role)
+  const visibleNav = NAV.filter(item => permissions.routes.includes(item.to))
+
   return (
     <aside className="w-60 flex-shrink-0 bg-gradient-to-b from-emerald-800 to-teal-900 flex flex-col h-full">
       {/* Logo */}
@@ -37,7 +41,7 @@ export default function Sidebar({ user, onLogout }) {
         <p className="text-emerald-300/60 text-[10px] font-semibold uppercase tracking-widest px-3 mb-2">
           Navigation
         </p>
-        {NAV.map(({ to, icon: Icon, label }) => (
+        {visibleNav.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
             to={to}

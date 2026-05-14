@@ -5,6 +5,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts'
 import { REPORT_DATA, WEEKLY_DATA } from '../data/mockData'
+import { getPermissions } from '../data/roles'
 
 const PERIODS = [
   ['today', 'Today'],
@@ -12,8 +13,9 @@ const PERIODS = [
   ['month', 'This Month'],
 ]
 
-export default function Reports() {
+export default function Reports({ user }) {
   const [period, setPeriod] = useState('today')
+  const permissions = getPermissions(user.role)
   const data = REPORT_DATA[period]
 
   const totals = {
@@ -31,10 +33,16 @@ export default function Reports() {
           <h1 className="text-3xl font-black text-emerald-900">Occupancy Reports</h1>
           <p className="text-sm text-emerald-600 mt-1">Historical zone occupancy data — KIU Kansanga Campus</p>
         </div>
-        <button className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-lg shadow-emerald-600/20">
-          <Download className="w-4 h-4" />
-          Export CSV
-        </button>
+        {permissions.canExportReports ? (
+          <button className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-lg shadow-emerald-600/20">
+            <Download className="w-4 h-4" />
+            Export CSV
+          </button>
+        ) : (
+          <span className="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wide border border-emerald-200 bg-white text-emerald-700">
+            Read Only
+          </span>
+        )}
       </div>
 
       {/* Period tabs */}

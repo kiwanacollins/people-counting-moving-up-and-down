@@ -8,6 +8,7 @@ import Reports  from './pages/Reports'
 import Alerts   from './pages/Alerts'
 import Sidebar  from './components/Sidebar'
 import TopBar   from './components/TopBar'
+import { getPermissions } from './data/roles'
 
 function Layout({ user, onLogout, children }) {
   return (
@@ -28,17 +29,28 @@ export default function App() {
 
   if (!user) return <Login onLogin={setUser} />
 
+  const permissions = getPermissions(user.role)
+  const defaultRoute = permissions.routes[0] || '/overview'
+
   return (
     <SimulationProvider>
       <BrowserRouter>
         <Layout user={user} onLogout={() => setUser(null)}>
           <Routes>
-            <Route path="/"         element={<Navigate to="/overview" replace />} />
-            <Route path="/overview" element={<Overview />} />
-            <Route path="/zones"    element={<Zones />} />
-            <Route path="/reports"  element={<Reports />} />
-            <Route path="/alerts"   element={<Alerts />} />
-            <Route path="*"         element={<Navigate to="/overview" replace />} />
+            <Route path="/"         element={<Navigate to={defaultRoute} replace />} />
+            {permissions.routes.includes('/overview') && (
+              <Route path="/overview" element={<Overview user={user} />} />
+            )}
+            {permissions.routes.includes('/zones') && (
+              <Route path="/zones" element={<Zones user={user} />} />
+            )}
+            {permissions.routes.includes('/reports') && (
+              <Route path="/reports" element={<Reports user={user} />} />
+            )}
+            {permissions.routes.includes('/alerts') && (
+              <Route path="/alerts" element={<Alerts user={user} />} />
+            )}
+            <Route path="*"         element={<Navigate to={defaultRoute} replace />} />
           </Routes>
         </Layout>
       </BrowserRouter>

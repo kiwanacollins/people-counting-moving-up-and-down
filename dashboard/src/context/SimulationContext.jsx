@@ -29,8 +29,31 @@ export function SimulationProvider({ children }) {
   const totalCount   = zones.reduce((s, z) => s + z.currentCount, 0)
   const alertCount   = zones.filter(z => (z.currentCount / z.capacity) * 100 >= z.threshold).length
 
+  const addZone = (zoneInput) => {
+    setZones(prev => {
+      const nextId = prev.length ? Math.max(...prev.map(z => z.id)) + 1 : 1
+      const safeCapacity = Number(zoneInput.capacity) || 1
+      const initialCount = Math.max(0, Math.min(Number(zoneInput.currentCount) || 0, safeCapacity))
+      return [
+        ...prev,
+        {
+          id: nextId,
+          name: zoneInput.name.trim(),
+          shortName: (zoneInput.shortName || zoneInput.name).trim(),
+          location: zoneInput.location.trim(),
+          camera: zoneInput.camera.trim().toUpperCase(),
+          capacity: safeCapacity,
+          currentCount: initialCount,
+          inCount: Number(zoneInput.inCount) || 0,
+          outCount: Number(zoneInput.outCount) || 0,
+          threshold: Number(zoneInput.threshold) || 80,
+        },
+      ]
+    })
+  }
+
   return (
-    <SimulationContext.Provider value={{ zones, totalCount, alertCount }}>
+    <SimulationContext.Provider value={{ zones, totalCount, alertCount, addZone }}>
       {children}
     </SimulationContext.Provider>
   )

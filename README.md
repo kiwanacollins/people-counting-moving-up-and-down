@@ -80,11 +80,6 @@ python3 main.py --video test.mp4 --confidence 0.6 --line-ratio 0.45
 
 - Press `q` while the video window is focused to stop the program.
 
-## Troubleshooting
-
-- If you see `ModuleNotFoundError: No module named 'cv2'`, install dependencies again with `pip install -r requirements.txt`.
-- If a file is reported missing, make sure `deploy.prototxt`, `mobilenet_iter_73000.caffemodel`, and your chosen video file exist in this folder or pass their paths explicitly.
-- If no video window appears, check that your local Python/OpenCV install supports GUI display.
 
 ## Start Command Summary
 
