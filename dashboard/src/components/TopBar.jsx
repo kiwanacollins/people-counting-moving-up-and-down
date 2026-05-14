@@ -7,6 +7,8 @@ const PAGE_TITLES = {
   '/zones':    'Live Zone Monitoring',
   '/reports':  'Occupancy Reports',
   '/alerts':   'Alerts & Notifications',
+  '/incidents': 'Incident Workflow',
+  '/messages':  'Messages & Notifications',
 }
 
 export default function TopBar({ user }) {

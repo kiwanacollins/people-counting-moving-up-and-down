@@ -11,7 +11,7 @@ import { HOURLY_TREND } from '../data/mockData'
 import { getPermissions } from '../data/roles'
 
 export default function Overview({ user }) {
-  const { zones, totalCount, alertCount, addZone } = useSimulation()
+  const { zones, totalCount, alertCount, addZone, predictions, incidentStats } = useSimulation()
   const permissions = getPermissions(user.role)
   const [showAddForm, setShowAddForm] = useState(false)
   const [form, setForm] = useState({
@@ -20,10 +20,6 @@ export default function Overview({ user }) {
     location: '',
     camera: '',
     capacity: 100,
-    currentCount: 0,
-    inCount: 0,
-    outCount: 0,
-    threshold: 80,
   })
 
   const zoneBarData = zones.map(z => ({
@@ -31,6 +27,10 @@ export default function Overview({ user }) {
     Current: z.currentCount,
     Capacity: z.capacity,
   }))
+  const hotspotPredictions = predictions
+    .filter(pred => pred.expectedBreach)
+    .sort((a, b) => b.p30Percent - a.p30Percent)
+    .slice(0, 3)
 
   const onFormChange = (key, value) => {
     setForm(prev => ({ ...prev, [key]: value }))
@@ -43,10 +43,6 @@ export default function Overview({ user }) {
       location: '',
       camera: '',
       capacity: 100,
-      currentCount: 0,
-      inCount: 0,
-      outCount: 0,
-      threshold: 80,
     })
   }
 
@@ -220,6 +216,47 @@ export default function Overview({ user }) {
         </ResponsiveContainer>
       </div>
 
+      {permissions.canAddZone && (
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+          <div className="xl:col-span-2 bg-white rounded-2xl border border-emerald-100 shadow-sm p-6">
+            <h3 className="text-sm font-bold text-emerald-900">Prediction Engine (Next 30 Minutes)</h3>
+            <p className="text-xs text-emerald-600 mt-0.5">Hotspots likely to exceed zone threshold soon.</p>
+            <div className="mt-4 space-y-3">
+              {hotspotPredictions.length === 0 && (
+                <p className="text-sm text-emerald-700">No zone is forecasted to breach threshold in the next 30 minutes.</p>
+              )}
+              {hotspotPredictions.map(pred => (
+                <div key={pred.zoneId} className="border border-amber-200 bg-amber-50 rounded-xl p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-bold text-emerald-900">{pred.zoneName}</p>
+                    <span className="text-xs font-bold text-amber-700">{pred.p30Percent}% expected</span>
+                  </div>
+                  <p className="text-xs text-emerald-700 mt-1">
+                    Current: {pred.current} · 15m: {pred.p15} · 30m: {pred.p30} · 60m: {pred.p60}
+                  </p>
+                  <p className="text-xs text-emerald-700 mt-0.5">Confidence: {pred.confidence}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-emerald-100 shadow-sm p-6 space-y-4">
+            <h3 className="text-sm font-bold text-emerald-900">Incident Workflow KPIs</h3>
+            <div>
+              <p className="text-[11px] uppercase tracking-wide font-semibold text-emerald-600">Active Incidents</p>
+              <p className="text-3xl font-black text-emerald-900">{incidentStats.active}</p>
+            </div>
+            <div>
+              <p className="text-[11px] uppercase tracking-wide font-semibold text-emerald-600">Predicted Breaches Prevented</p>
+              <p className="text-3xl font-black text-emerald-900">{incidentStats.predictedPrevented}</p>
+            </div>
+            <div className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg p-3">
+              Open <span className="font-bold">Incidents</span> to acknowledge, assign, escalate, and resolve auto-generated tickets.
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Add zone modal */}
       {permissions.canAddZone && showAddForm && (
         <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
@@ -244,33 +281,33 @@ export default function Overview({ user }) {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="space-y-3">
               <input
                 required
                 value={form.name}
                 onChange={e => onFormChange('name', e.target.value)}
-                placeholder="Zone name"
-                className="px-3 py-2.5 rounded-xl border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                placeholder="Zone name (e.g. Main Entrance)"
+                className="w-full px-3 py-2.5 rounded-xl border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
               <input
                 value={form.shortName}
                 onChange={e => onFormChange('shortName', e.target.value)}
-                placeholder="Short name (optional)"
-                className="px-3 py-2.5 rounded-xl border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                placeholder="Short name (optional, e.g. Main Entry)"
+                className="w-full px-3 py-2.5 rounded-xl border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
               <input
                 required
                 value={form.location}
                 onChange={e => onFormChange('location', e.target.value)}
-                placeholder="Location"
-                className="px-3 py-2.5 rounded-xl border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                placeholder="Location description (e.g. Block A – Ground Floor)"
+                className="w-full px-3 py-2.5 rounded-xl border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
               <input
                 required
                 value={form.camera}
                 onChange={e => onFormChange('camera', e.target.value)}
                 placeholder="Camera ID (e.g. CAM-08)"
-                className="px-3 py-2.5 rounded-xl border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-3 py-2.5 rounded-xl border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
               <input
                 required
@@ -278,45 +315,8 @@ export default function Overview({ user }) {
                 min="1"
                 value={form.capacity}
                 onChange={e => onFormChange('capacity', Number(e.target.value))}
-                placeholder="Capacity"
-                className="px-3 py-2.5 rounded-xl border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-              <input
-                required
-                type="number"
-                min="50"
-                max="99"
-                value={form.threshold}
-                onChange={e => onFormChange('threshold', Number(e.target.value))}
-                placeholder="Threshold %"
-                className="px-3 py-2.5 rounded-xl border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-              <input
-                type="number"
-                min="0"
-                value={form.currentCount}
-                onChange={e => onFormChange('currentCount', Number(e.target.value))}
-                placeholder="Current count"
-                className="px-3 py-2.5 rounded-xl border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-              <input
-                type="number"
-                min="0"
-                value={form.inCount}
-                onChange={e => onFormChange('inCount', Number(e.target.value))}
-                placeholder="Total in"
-                className="px-3 py-2.5 rounded-xl border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-            </div>
-
-            <div>
-              <input
-                type="number"
-                min="0"
-                value={form.outCount}
-                onChange={e => onFormChange('outCount', Number(e.target.value))}
-                placeholder="Total out"
-                className="w-full md:w-[calc(50%-0.375rem)] px-3 py-2.5 rounded-xl border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                placeholder="Maximum capacity (people that must not exceed)"
+                className="w-full px-3 py-2.5 rounded-xl border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
 

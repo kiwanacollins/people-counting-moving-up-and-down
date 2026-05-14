@@ -1,17 +1,24 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, Video, BarChart2, Bell, LogOut, Shield } from 'lucide-react'
+import { LayoutDashboard, Video, BarChart2, Bell, ClipboardList, Mail, LogOut, Shield } from 'lucide-react'
 import { getPermissions } from '../data/roles'
+import { useSimulation } from '../context/SimulationContext'
 
 const NAV = [
   { to: '/overview', icon: LayoutDashboard, label: 'Overview' },
   { to: '/zones',    icon: Video,           label: 'Live Zones' },
   { to: '/reports',  icon: BarChart2,       label: 'Reports' },
   { to: '/alerts',   icon: Bell,            label: 'Alerts' },
+  { to: '/incidents', icon: ClipboardList,  label: 'Incidents' },
+  { to: '/messages',  icon: Mail,           label: 'Messages' },
 ]
 
 export default function Sidebar({ user, onLogout }) {
   const permissions = getPermissions(user.role)
   const visibleNav = NAV.filter(item => permissions.routes.includes(item.to))
+  const { messages } = useSimulation()
+
+  const senderRole = user.role === 'Administrator' ? 'Security Staff' : 'Administrator'
+  const unreadCount = messages.filter(m => m.from === senderRole && m.to === user.role && !m.read).length
 
   return (
     <aside className="w-60 flex-shrink-0 bg-gradient-to-b from-emerald-800 to-teal-900 flex flex-col h-full">
@@ -54,7 +61,12 @@ export default function Sidebar({ user, onLogout }) {
             }
           >
             <Icon className="w-4 h-4 flex-shrink-0" />
-            {label}
+            <span className="flex-1">{label}</span>
+            {to === '/messages' && unreadCount > 0 && (
+              <span className="w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+                {unreadCount}
+              </span>
+            )}
           </NavLink>
         ))}
       </nav>

@@ -6,6 +6,8 @@ import Overview from './pages/Overview'
 import Zones    from './pages/Zones'
 import Reports  from './pages/Reports'
 import Alerts   from './pages/Alerts'
+import Incidents from './pages/Incidents'
+import Messages from './pages/Messages'
 import Sidebar  from './components/Sidebar'
 import TopBar   from './components/TopBar'
 import { getPermissions } from './data/roles'
@@ -49,6 +51,12 @@ export default function App() {
             )}
             {permissions.routes.includes('/alerts') && (
               <Route path="/alerts" element={<Alerts user={user} />} />
+            )}
+            {permissions.routes.includes('/incidents') && (
+              <Route path="/incidents" element={<Incidents user={user} />} />
+            )}
+            {permissions.routes.includes('/messages') && (
+              <Route path="/messages" element={<Messages user={user} />} />
             )}
             <Route path="*"         element={<Navigate to={defaultRoute} replace />} />
           </Routes>
