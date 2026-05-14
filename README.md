@@ -96,5 +96,5 @@ viewer	view123	Viewer
 
 
 
-python3 main.py                                             # test.mp4
+python3 main.py                                            
 python3 main.py --video old-building-footage-converted.mp4
